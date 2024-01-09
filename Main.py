@@ -1,15 +1,13 @@
 # trunk-ignore-all(isort)
 import streamlit as st
 from st_xatadb_connection import XataConnection
-import bcrypt
 
 st.set_page_config(page_title="Xata Demo", page_icon="🦋", layout="wide")
 # Set the connection to the database
 xata = st.connection("xata", type=XataConnection)
 
 # Set the title of the app
-st.title("Xata Demo")
-st.subheader("Chat Room with Xata and Streamlit")
+st.title("Club de Matemáticas Acatlán 👾")
 st.divider()
 # Set the variables for the app
 if "login_status" not in st.session_state:
@@ -65,76 +63,6 @@ def add_comment():
             st.write(e)
 
 
-def login():
-    st.title("Login")
-    # this is the login form
-    with st.form(key="login_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submit_button = st.form_submit_button(label="Login")
-
-        if username != "" and password != "":
-            user_info = None
-
-            try:
-                user_info = xata.get("Users", username.strip())
-            except Exception as e:
-                if e.status_code == 404:
-                    # this means that the user does not exist
-                    st.error("No users found")
-
-        if submit_button:
-            if user_info is not None:
-                if bcrypt.checkpw(
-                    password.strip().encode(), user_info["password"].encode()
-                ):
-                    st.toast("Logged in as {}".format(username.strip()), icon="😄")
-                    st.session_state.login_status = True
-                    st.session_state.username = username.strip()
-                    st.rerun()
-
-                else:
-                    st.error("Incorrect password")
-            else:
-                st.error("No users found")
-
-
-def user_register():
-    st.title("Register")
-    with st.form(key="register_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        password2 = st.text_input("Confirm Password", type="password")
-
-        submit_button = st.form_submit_button(label="Register")
-
-        if submit_button and username != "" and password != "":
-            if password.strip() == password2.strip():
-                try:
-                    xata.get("Users", username.strip())
-                    st.error("User already exists")
-                except Exception as e:
-                    if e.status_code == 404:
-                        try:
-                            result = xata.insert(
-                                "Users",
-                                {
-                                    "username": username.strip(),
-                                    "password": bcrypt.hashpw(
-                                        password.strip().encode(), bcrypt.gensalt()
-                                    ).decode(),
-                                },
-                                record_id=username.strip(),
-                                if_version=0,
-                            )
-                            st.toast("User created", icon="😄")
-                            st.write(result)
-                        except Exception as e:
-                            st.error("Something went wrong")
-                            st.write(e)
-            else:
-                st.error("Passwords do not match")
-    st.caption("This is a demo app so please do not use real passwords.")
 
 
 def chat_room(loged: bool = False):
@@ -179,19 +107,7 @@ def app():
             st.session_state.login_status = False
             st.session_state.username = None
             st.rerun()
-    else:
-        if st.session_state.view is None:
-            st.session_state.view = "login"
-        if st.session_state.view == "login":
-            login()
-            if st.button("Register"):
-                st.session_state.view = "register"
-                st.rerun()
-        elif st.session_state.view == "register":
-            user_register()
-            if st.button("Login"):
-                st.session_state.view = "login"
-                st.rerun()
+
     chat_room(st.session_state.login_status)
 
     st.caption("Para ver nuevos mensajes refresca el chat")
