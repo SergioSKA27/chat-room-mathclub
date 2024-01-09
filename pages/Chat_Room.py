@@ -3,6 +3,8 @@ import streamlit as st
 from PIL import Image
 from st_xatadb_connection import XataConnection
 from streamlit_drawable_canvas import st_canvas
+from streamlit_extras.switch_page_button import switch_page
+
 
 xata = st.connection("xata", type=XataConnection)
 
@@ -43,7 +45,8 @@ if 'page' not in st.session_state:
 if "chatmessage" not in st.session_state:
     st.session_state.chatmessage = None
 
-
+if "login_status" not in st.session_state:
+    switch_page("Main")
 
 def update_chat():
     # this updates the chat to get the latest messages

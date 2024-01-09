@@ -56,3 +56,5 @@ if not st.session_state.login_status:
 """,
     unsafe_allow_html=True,
 )
+
+st.image("banner.gif",use_column_width=True)
