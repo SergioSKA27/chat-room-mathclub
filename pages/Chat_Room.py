@@ -122,7 +122,7 @@ def upload_image():
     url =  st.text_input("URL")
     if st.button("Subir",key="upload_image"):
         if url != "":
-            comm = f'![{url.split(".")[0]}]({url})'
+            comm = f'<img src="{url}" height=400px>'
             xata.insert("comments",{"user":st.session_state.username,"comment":comm})
         update_chat()
         st.rerun()
@@ -153,7 +153,7 @@ def chat_room(loged: bool = False):
     with ct[0]:
         st.title("💬 Chat Room")
     with ct[1]:
-        if st.button("Reset"):
+        if st.button("Resetear"):
             st.session_state.chat = [xata.query("comments", {"page": {"size": 20}, "sort": {"xata.createdAt": "desc"}})]
             st.session_state.page = 0
     read_chat()
