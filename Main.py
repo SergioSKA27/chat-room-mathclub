@@ -7,6 +7,25 @@ st.set_page_config(page_title="Xata Demo", page_icon="🦋", layout="wide",initi
 # Set the connection to the database
 xata = st.connection("xata", type=XataConnection)
 
+st.markdown('''
+<style>
+    .bg-image {
+        background-color: #ffffff;
+        opacity: 0.3;
+        background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, #ffffff 10px ), repeating-linear-gradient( #444cf755, #444cf7 );
+        bottom:0;
+        left:-50%;
+        position:fixed;
+        right:-50%;
+        top:0;
+        z-index:0;
+        ackground-size: cover;
+        background-position: center center;
+    }
+</style>
+<div class="bg-image"></div>
+''', unsafe_allow_html=True)
+
 
 # Set the title of the app
 st.title("Club de Matemáticas Acatlán 👾")

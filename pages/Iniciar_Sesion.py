@@ -6,6 +6,27 @@ import bcrypt
 
 xata = st.connection("xata", type=XataConnection)
 
+st.markdown('''
+<style>
+    .bg-image {
+        background-color: #ffffff;
+        opacity: 0.2;
+        background-size: 10px 10px;
+        background-image: repeating-linear-gradient(45deg, #444cf7 0, #444cf7 1px, #ffffff 0, #ffffff 50%);
+        bottom:0;
+        left:-50%;
+        position:fixed;
+        right:-50%;
+        top:0;
+        z-index:0;
+        ackground-size: cover;
+        background-position: center center;
+    }
+</style>
+<div class="bg-image"></div>
+''', unsafe_allow_html=True)
+
+
 if "login_status" in st.session_state:
     if st.session_state.login_status:
         switch_page("Chat_Room")
@@ -14,8 +35,8 @@ def login():
     st.title("Iniciar Sesión")
     # this is the login form
     with st.form(key="login_form"):
-        username = st.text_input("Usuario 👾")
-        password = st.text_input("Contraseña", type="password")
+        username = st.text_input("Usuario 👾",placeholder="Nombre de Usuario")
+        password = st.text_input("Contraseña", type="password",placeholder="Contraseña")
         submit_button = st.form_submit_button(label="Iniciar Sesión")
 
         if username != "" and password != "":

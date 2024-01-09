@@ -5,7 +5,25 @@ from streamlit_extras.switch_page_button import switch_page
 import bcrypt
 
 xata = st.connection("xata", type=XataConnection)
-
+st.markdown('''
+<style>
+    .bg-image {
+        background-color: #ffffff;
+        opacity: 0.1;
+        background-image: radial-gradient(circle at center center, #444cf7, #ffffff), repeating-radial-gradient(circle at center center, #444cf7, #444cf7, 10px, transparent 20px, transparent 10px);
+        background-blend-mode: multiply;
+        bottom:0;
+        left:-50%;
+        position:fixed;
+        right:-50%;
+        top:0;
+        z-index:0;
+        ackground-size: cover;
+        background-position: center center;
+    }
+</style>
+<div class="bg-image"></div>
+''', unsafe_allow_html=True)
 def user_register():
     st.title("Registro de Usuario 👾")
     with st.form(key="register_form"):
