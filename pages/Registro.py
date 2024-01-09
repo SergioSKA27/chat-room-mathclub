@@ -1,6 +1,7 @@
 # trunk-ignore-all(isort)
 import streamlit as st
 from st_xatadb_connection import XataConnection
+from streamlit_extras.switch_page_button import switch_page
 import bcrypt
 
 xata = st.connection("xata", type=XataConnection)
@@ -9,6 +10,7 @@ def user_register():
     st.title("Registro de Usuario 👾")
     with st.form(key="register_form"):
         username = st.text_input("Nombre de Usuario")
+        name = st.text_input("Nombre Completo (opcional)")
         password = st.text_input("Contaseña", type="password")
         password2 = st.text_input("Confirmar Contraseña", type="password")
 
@@ -25,10 +27,10 @@ def user_register():
                             result = xata.insert(
                                 "Users",
                                 {
-                                    "username": username.strip(),
                                     "password": bcrypt.hashpw(
                                         password.strip().encode(), bcrypt.gensalt()
                                     ).decode(),
+                                    "name": name
                                 },
                                 record_id=username.strip(),
                                 if_version=0,
@@ -44,3 +46,5 @@ def user_register():
 
 if __name__ == "__main__":
     user_register()
+    if st.button("Iniciar Sesión"):
+        switch_page("Iniciar_Sesion")

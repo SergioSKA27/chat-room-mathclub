@@ -1,9 +1,14 @@
 # trunk-ignore-all(isort)
 import streamlit as st
 from st_xatadb_connection import XataConnection
+from streamlit_extras.switch_page_button import switch_page
 import bcrypt
 
 xata = st.connection("xata", type=XataConnection)
+
+if "login_status" in st.session_state:
+    if st.session_state.login_status:
+        switch_page("Chat_Room")
 
 def login():
     st.title("Iniciar Sesión")
@@ -31,7 +36,7 @@ def login():
                     st.toast("Logged in as {}".format(username.strip()), icon="😄")
                     st.session_state.login_status = True
                     st.session_state.username = username.strip()
-                    st.rerun()
+                    switch_page("Chat_Room")
 
                 else:
                     st.error("Incorrect password")
