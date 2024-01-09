@@ -153,11 +153,11 @@ def chat_room(loged: bool = False):
                     st.write("Error al leer el mensaje")
                     print(e)
 
-    ct = st.columns([0.9,0.1])
+    ct = st.columns([0.8,0.2])
     with ct[0]:
         st.title("💬 Chat Room")
     with ct[1]:
-        if st.button("Resetear"):
+        if st.button("Resetear",use_container_width=True):
             st.session_state.chat = [xata.query("comments", {"page": {"size": 20}, "sort": {"xata.createdAt": "desc"}})]
             st.session_state.page = 0
     read_chat()
