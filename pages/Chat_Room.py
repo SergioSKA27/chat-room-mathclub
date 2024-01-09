@@ -31,7 +31,7 @@ if "chat" not in st.session_state:
     # this stores the chat
     try:
         st.session_state.chat = [xata.query(
-            "comments", {"page": {"size": 10}, "sort": {"xata.createdAt": "desc"}}
+            "comments", {"page": {"size": 20}, "sort": {"xata.createdAt": "desc"}}
         )]
     except Exception as e:
         st.error(e)
@@ -48,9 +48,9 @@ if "chatmessage" not in st.session_state:
 def update_chat():
     # this updates the chat to get the latest messages
     try:
-        st.session_state.chat = xata.query(
+        st.session_state.chat = [xata.query(
             "comments", {"page": {"size": 10}, "sort": {"xata.createdAt": "desc"}}
-        )
+        )]
     # trunk-ignore(ruff/E722)
     except:
         st.session_state.chat = []
@@ -89,8 +89,6 @@ def drawable_canvas():
 
     realtime_update = st.sidebar.checkbox("Update in realtime", True)
 
-
-
     # Create a canvas component
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
@@ -117,6 +115,8 @@ def drawable_canvas():
             byte_im = buf.getvalue()
 
             xata.upload_file("comments",c["id"],"file",byte_im,"image/png")
+            update_chat()
+            st.rerun()
 
 def upload_image():
     url =  st.text_input("URL")
@@ -145,7 +145,13 @@ def chat_room(loged: bool = False):
                     st.markdown(i["comment"],unsafe_allow_html=True)
                 st.write(i["xata"]["createdAt"][:19])
 
-    st.title("Chat Room")
+    ct = st.columns([0.9,0.1])
+    with ct[0]:
+        st.title("Chat Room")
+    with ct[1]:
+        if st.button("Reset"):
+            st.session_state.chat = [xata.query("comments", {"page": {"size": 20}, "sort": {"xata.createdAt": "desc"}})]
+            st.session_state.page = 0
     read_chat()
 
     cols = st.columns([0.7, 0.1, 0.1, 0.1])
@@ -219,7 +225,4 @@ def app():
 
 
 if __name__ == "__main__":
-    if st.button("Reset"):
-        st.session_state.chat = [xata.query("comments", {"page": {"size": 10}, "sort": {"xata.createdAt": "desc"}})]
-        st.session_state.page = 0
     app()
