@@ -1,7 +1,31 @@
+import io
 import streamlit as st
+from PIL import Image
 from st_xatadb_connection import XataConnection
+from streamlit_drawable_canvas import st_canvas
 
 xata = st.connection("xata", type=XataConnection)
+
+st.markdown('''
+<style>
+    .bg-image {
+        background-color: #ffffff;
+        opacity: 0.1;
+        background-size: 20px 20px;
+        background-image:  repeating-linear-gradient(0deg, #444cf7, #444cf7 1px, #ffffff 1px, #ffffff);
+
+        bottom:0;
+        left:-50%;
+        position:fixed;
+        right:-50%;
+        top:0;
+        z-index:0;
+        ackground-size: cover;
+        background-position: center center;
+    }
+</style>
+<div class="bg-image"></div>
+''', unsafe_allow_html=True)
 
 if "chat" not in st.session_state or st.session_state.chat is None:
     # this stores the chat
@@ -26,8 +50,6 @@ def update_chat():
     except:
         st.session_state.chat = []
 
-update_chat()
-
 def add_comment():
     # this adds the comment to the database
     if st.session_state.chatmessage is not None and st.session_state.chatmessage != "":
@@ -44,12 +66,53 @@ def add_comment():
             st.error("Something went wrong try again")
             st.write(e)
 
-
-
 def extract_code_from_graphviz(text):
     return text.split('$')[1]
 
+def drawable_canvas():
+    # Specify canvas parameters in application
+    drawing_mode = st.sidebar.selectbox(
+        "Drawing tool:",("Punto", "Libre", "Linea", "Rectangulo", "Circulo", "Transformar")
+    )
+    tools =  dict(zip(("Punto", "Libre", "Linea", "Rectangulo", "Circulo", "Transformar"),("point", "freedraw", "line", "rect", "circle", "transform")))
+    stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 3)
+    if drawing_mode == 'point':
+        point_display_radius = st.sidebar.slider("Point display radius: ", 1, 25, 3)
+    stroke_color = st.sidebar.color_picker("Stroke color hex: ")
+    bg_color = st.sidebar.color_picker("Background color hex: ", "#eee")
+    bg_image = st.sidebar.file_uploader("Background image:", type=["png", "jpg"])
 
+    realtime_update = st.sidebar.checkbox("Update in realtime", True)
+
+
+
+    # Create a canvas component
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+        stroke_width=stroke_width,
+        stroke_color=stroke_color,
+        background_color=bg_color,
+        background_image=Image.open(bg_image) if bg_image else None,
+        update_streamlit=realtime_update,
+        height=150,
+        drawing_mode=tools[drawing_mode],
+        point_display_radius=point_display_radius if drawing_mode == 'point' else 0,
+        key="canvas",
+    )
+
+    # Do something interesting with the image data and paths
+    if canvas_result.image_data is not None:
+        if st.button("Subir",key="upload_canvas"):
+            comment = 'Canvas'
+            c = xata.insert("comments",{"user":st.session_state.username,"comment":comment})
+            im = Image.fromarray(canvas_result.image_data)
+            buf = io.BytesIO()
+            im.save(buf, format='PNG')
+            byte_im = buf.getvalue()
+
+            xata.upload_file("comments",c["id"],"file",byte_im,"image/png")
+        st.caption("Preview")
+        st.image(canvas_result.image_data)
 
 def upload_image():
     url =  st.text_input("URL")
@@ -71,6 +134,8 @@ def chat_room(loged: bool = False):
                         st.code(code, language="dot")
                     if code is not None:
                         st.graphviz_chart(code)
+                if "file" in i and "url" in i["file"]:
+                    st.image(i["file"]["url"],channels="RGBA")
                 else:
                     st.markdown(i["comment"],unsafe_allow_html=True)
                 st.write(i["xata"]["createdAt"][:19])
@@ -99,6 +164,10 @@ def chat_room(loged: bool = False):
 
     with colsops[1]:
         graph = st.checkbox("🖧")
+
+    with colsops[2]:
+        canvas = st.checkbox("🎨")
+
     if graph:
         code = st.text_area("Codigo de Graphviz",height=200)
         if st.button("Subir"):
@@ -112,12 +181,13 @@ def chat_room(loged: bool = False):
     chat_input = st.chat_input(
         "Type here", key="chat_input", max_chars=250, disabled=not loged
     )
+    if canvas:
+        drawable_canvas()
     if chat_input:
         st.session_state.chatmessage = chat_input
         add_comment()
         update_chat()
         st.rerun()
-
 
 def app():
     if st.session_state.login_status:
@@ -130,6 +200,7 @@ def app():
     chat_room(st.session_state.login_status)
 
     st.caption("Para ver nuevos mensajes refresca el chat")
+
 
 
 if __name__ == "__main__":
