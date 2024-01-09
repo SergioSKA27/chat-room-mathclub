@@ -162,7 +162,7 @@ def chat_room(loged: bool = False):
         ))
         st.session_state.page += 1
 
-        if st.session_state.chat[st.session_state.page]["records"]  is None:
+        if st.session_state.chat[st.session_state.page] is None:
             del st.session_state.chat[st.session_state.page]
             st.session_state.page  = 0
         st.rerun()
@@ -219,4 +219,7 @@ def app():
 
 
 if __name__ == "__main__":
+    if st.button("Reset"):
+        st.session_state.chat = [xata.query("comments", {"page": {"size": 10}, "sort": {"xata.createdAt": "desc"}})]
+        st.session_state.page = 0
     app()
