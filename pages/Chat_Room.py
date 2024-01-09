@@ -27,18 +27,23 @@ st.markdown('''
 <div class="bg-image"></div>
 ''', unsafe_allow_html=True)
 
-if "chat" not in st.session_state or st.session_state.chat is None:
+if "chat" not in st.session_state:
     # this stores the chat
     try:
-        st.session_state.chat = xata.query(
+        st.session_state.chat = [xata.query(
             "comments", {"page": {"size": 10}, "sort": {"xata.createdAt": "desc"}}
-        )
+        )]
     except Exception as e:
         st.error(e)
         st.session_state.chat = []
 
+if 'page' not in st.session_state:
+    st.session_state.page = 0
+
 if "chatmessage" not in st.session_state:
     st.session_state.chatmessage = None
+
+
 
 def update_chat():
     # this updates the chat to get the latest messages
@@ -72,9 +77,9 @@ def extract_code_from_graphviz(text):
 def drawable_canvas():
     # Specify canvas parameters in application
     drawing_mode = st.sidebar.selectbox(
-        "Drawing tool:",("Punto", "Libre", "Linea", "Rectangulo", "Circulo", "Transformar")
+        "Drawing tool:",("Libre", "Linea", "Rectangulo", "Circulo", "Transformar")
     )
-    tools =  dict(zip(("Punto", "Libre", "Linea", "Rectangulo", "Circulo", "Transformar"),("point", "freedraw", "line", "rect", "circle", "transform")))
+    tools =  dict(zip(("Libre", "Linea", "Rectangulo", "Circulo", "Transformar"),("freedraw", "line", "rect", "circle", "transform")))
     stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 3)
     if drawing_mode == 'point':
         point_display_radius = st.sidebar.slider("Point display radius: ", 1, 25, 3)
@@ -112,8 +117,6 @@ def drawable_canvas():
             byte_im = buf.getvalue()
 
             xata.upload_file("comments",c["id"],"file",byte_im,"image/png")
-        st.caption("Preview")
-        st.image(canvas_result.image_data)
 
 def upload_image():
     url =  st.text_input("URL")
@@ -125,8 +128,9 @@ def upload_image():
         st.rerun()
 
 def chat_room(loged: bool = False):
+
     def read_chat():
-        for i in st.session_state.chat["records"][::-1]:
+        for i in st.session_state.chat[st.session_state.page]["records"][::-1]:
             with st.chat_message("user", avatar="🦋"):
                 st.write(":blue[user] : " + i["user"]["id"])
                 if "graphviz" in i["comment"]:
@@ -143,16 +147,24 @@ def chat_room(loged: bool = False):
 
     st.title("Chat Room")
     read_chat()
+
     cols = st.columns([0.7, 0.1, 0.1, 0.1])
+
+
     if cols[1].button("⏮️",use_container_width=True):
-        st.session_state.chat = xata.prev_page(
-            "comments", st.session_state.chat, pagesize=10
-        )
-        st.rerun()
+        if st.session_state.page > 0:
+            st.session_state.page -= 1
+            st.rerun()
+
     if cols[2].button("⏭️",use_container_width=True):
-        st.session_state.chat = xata.next_page(
-            "comments", st.session_state.chat, pagesize=10
-        )
+        st.session_state.chat.append(xata.next_page(
+            "comments", st.session_state.chat[st.session_state.page], pagesize=10
+        ))
+        st.session_state.page += 1
+
+        if st.session_state.chat[st.session_state.page]["records"]  is None:
+            del st.session_state.chat[st.session_state.page]
+            st.session_state.page  = 0
         st.rerun()
     if cols[3].button("🔄",use_container_width=True):
         update_chat()
@@ -184,6 +196,8 @@ def chat_room(loged: bool = False):
     )
     if canvas:
         drawable_canvas()
+
+
     if chat_input:
         st.session_state.chatmessage = chat_input
         add_comment()
