@@ -121,11 +121,11 @@ def chat_room(loged: bool = False):
 
 def app():
     if st.session_state.login_status:
-        st.title("Welcome")
-        if st.button("Logout"):
-            st.session_state.login_status = False
-            st.session_state.username = None
-            st.rerun()
+        with st.sidebar:
+            if st.button("Cerrar Sesión"):
+                st.session_state.login_status = False
+                st.session_state.username = None
+                st.rerun()
 
     chat_room(st.session_state.login_status)
 
