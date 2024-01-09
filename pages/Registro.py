@@ -8,11 +8,11 @@ xata = st.connection("xata", type=XataConnection)
 def user_register():
     st.title("Registro de Usuario 👾")
     with st.form(key="register_form"):
-        username = st.text_input("Username")
+        username = st.text_input("Nombre de Usuario")
         password = st.text_input("Contaseña", type="password")
         password2 = st.text_input("Confirmar Contraseña", type="password")
 
-        submit_button = st.form_submit_button(label="Registrar Usuario 👾")
+        submit_button = st.form_submit_button(label="Registrar Usuario 🚀")
 
         if submit_button and username != "" and password != "":
             if password.strip() == password2.strip():
@@ -42,3 +42,5 @@ def user_register():
                 st.error("Las contraseñas no coinciden 😢")
 
 
+if __name__ == "__main__":
+    user_register()

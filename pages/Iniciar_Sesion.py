@@ -6,12 +6,12 @@ import bcrypt
 xata = st.connection("xata", type=XataConnection)
 
 def login():
-    st.title("Login")
+    st.title("Iniciar Sesión")
     # this is the login form
     with st.form(key="login_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submit_button = st.form_submit_button(label="Login")
+        username = st.text_input("Usuario 👾")
+        password = st.text_input("Contraseña", type="password")
+        submit_button = st.form_submit_button(label="Iniciar Sesión")
 
         if username != "" and password != "":
             user_info = None
@@ -38,3 +38,5 @@ def login():
             else:
                 st.error("No users found")
 
+if __name__ == "__main__":
+    login()
