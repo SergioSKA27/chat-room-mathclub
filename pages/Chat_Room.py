@@ -106,6 +106,7 @@ def drawable_canvas():
             comment = 'Canvas'
             c = xata.insert("comments",{"user":st.session_state.username,"comment":comment})
             im = Image.fromarray(canvas_result.image_data)
+            im.convert("RGB")
             buf = io.BytesIO()
             im.save(buf, format='PNG')
             byte_im = buf.getvalue()
@@ -135,7 +136,7 @@ def chat_room(loged: bool = False):
                     if code is not None:
                         st.graphviz_chart(code)
                 if "file" in i and "url" in i["file"]:
-                    st.image(i["file"]["url"],channels="RGBA")
+                    st.image(i["file"]["url"])
                 else:
                     st.markdown(i["comment"],unsafe_allow_html=True)
                 st.write(i["xata"]["createdAt"][:19])
