@@ -132,22 +132,26 @@ def chat_room(loged: bool = False):
     def read_chat():
         for i in st.session_state.chat[st.session_state.page]["records"][::-1]:
             with st.chat_message("user", avatar="🦋"):
-                st.write(":blue[user] : " + i["user"]["id"])
-                if "graphviz" in i["comment"]:
-                    code = extract_code_from_graphviz(i["comment"])
-                    with st.expander("Ver Código de Graphviz 🖧"):
-                        st.code(code, language="dot")
-                    if code is not None:
-                        st.graphviz_chart(code)
-                if "file" in i and "url" in i["file"]:
-                    st.image(i["file"]["url"])
-                else:
-                    st.markdown(i["comment"],unsafe_allow_html=True)
-                st.write(i["xata"]["createdAt"][:19])
+                try:
+                    st.write(":blue[user] : " + i["user"]["id"])
+                    if "graphviz" in i["comment"]:
+                        code = extract_code_from_graphviz(i["comment"])
+                        with st.expander("Ver Código de Graphviz 🖧"):
+                            st.code(code, language="dot")
+                        if code is not None:
+                            st.graphviz_chart(code)
+                    if "file" in i and "url" in i["file"]:
+                        st.image(i["file"]["url"])
+                    else:
+                        st.markdown(i["comment"],unsafe_allow_html=True)
+                    st.write(i["xata"]["createdAt"][:19])
+                except Exception as e:
+                    st.write("Error al leer el mensaje")
+                    print(e)
 
     ct = st.columns([0.9,0.1])
     with ct[0]:
-        st.title("Chat Room")
+        st.title("💬 Chat Room")
     with ct[1]:
         if st.button("Reset"):
             st.session_state.chat = [xata.query("comments", {"page": {"size": 20}, "sort": {"xata.createdAt": "desc"}})]
@@ -198,7 +202,7 @@ def chat_room(loged: bool = False):
         upload_image()
 
     chat_input = st.chat_input(
-        "Type here", key="chat_input", max_chars=250, disabled=not loged
+        "Escribe tu mensaje", key="chat_input", max_chars=250, disabled=not loged
     )
     if canvas:
         drawable_canvas()
