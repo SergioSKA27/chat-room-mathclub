@@ -26,6 +26,7 @@ def update_chat():
     except:
         st.session_state.chat = []
 
+update_chat()
 
 def add_comment():
     # this adds the comment to the database
@@ -45,31 +46,68 @@ def add_comment():
 
 
 
+def extract_code_from_graphviz(text):
+    return text.split('$')[1]
+
+
+
+def upload_image():
+    url =  st.text_input("URL")
+    if st.button("Subir",key="upload_image"):
+        if url != "":
+            comm = f'![{url.split(".")[0]}]({url})'
+            xata.insert("comments",{"user":st.session_state.username,"comment":comm})
+        update_chat()
+        st.rerun()
 
 def chat_room(loged: bool = False):
     def read_chat():
         for i in st.session_state.chat["records"][::-1]:
             with st.chat_message("user", avatar="🦋"):
                 st.write(":blue[user] : " + i["user"]["id"])
-                st.write(i["comment"])
+                if "graphviz" in i["comment"]:
+                    code = extract_code_from_graphviz(i["comment"])
+                    with st.expander("Ver Código de Graphviz 🖧"):
+                        st.code(code, language="dot")
+                    if code is not None:
+                        st.graphviz_chart(code)
+                else:
+                    st.markdown(i["comment"],unsafe_allow_html=True)
                 st.write(i["xata"]["createdAt"][:19])
 
     st.title("Chat Room")
     read_chat()
-    cols = st.columns([0.2, 0.3, 0.3, 0.2])
-    if cols[1].button("Previous Page"):
+    cols = st.columns([0.7, 0.1, 0.1, 0.1])
+    if cols[1].button("⏮️",use_container_width=True):
         st.session_state.chat = xata.prev_page(
             "comments", st.session_state.chat, pagesize=10
         )
         st.rerun()
-    if cols[2].button("Next Page"):
+    if cols[2].button("⏭️",use_container_width=True):
         st.session_state.chat = xata.next_page(
             "comments", st.session_state.chat, pagesize=10
         )
         st.rerun()
-    if cols[3].button("🔄"):
+    if cols[3].button("🔄",use_container_width=True):
         update_chat()
         st.rerun()
+
+    colsops = st.columns(4)
+
+    with colsops[0]:
+        img = st.checkbox("🖼️")
+
+    with colsops[1]:
+        graph = st.checkbox("🖧")
+    if graph:
+        code = st.text_area("Codigo de Graphviz",height=200)
+        if st.button("Subir"):
+            comm = f'graphviz${code}'
+            xata.insert("comments",{"user":st.session_state.username,"comment":comm})
+            update_chat()
+            st.rerun()
+    if img:
+        upload_image()
 
     chat_input = st.chat_input(
         "Type here", key="chat_input", max_chars=250, disabled=not loged
