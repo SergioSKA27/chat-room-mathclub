@@ -1,3 +1,4 @@
 st-xatadb-connection
 streamlit-drawable-canvas
 streamlit-extras
+bcrypt
