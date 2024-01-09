@@ -140,10 +140,11 @@ def chat_room(loged: bool = False):
                             st.code(code, language="dot")
                         if code is not None:
                             st.graphviz_chart(code)
-                    if "file" in i and "url" in i["file"]:
-                        st.image(i["file"]["url"])
                     else:
-                        st.markdown(i["comment"],unsafe_allow_html=True)
+                        if "file" in i and "url" in i["file"]:
+                            st.image(i["file"]["url"])
+                        else:
+                            st.markdown(i["comment"],unsafe_allow_html=True)
                     st.write(i["xata"]["createdAt"][:19])
                 except Exception as e:
                     st.write("Error al leer el mensaje")
